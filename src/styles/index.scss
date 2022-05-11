@@ -1,0 +1,16 @@
+@import "./border";
+@import "./mixin";
+@import "./placeholder";
+@import "./variable";
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: "PingFang SC", "DroidSans", "Helvetica", arial, sans-serif, "Microsoft Yahei", "SimSun";
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  background-color: #f5f5f5;
+}

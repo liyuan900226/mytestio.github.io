@@ -1,0 +1,201 @@
+@mixin min-device-pixel-ratio($scale2, $scale3) {
+  @media screen and (min-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2) {
+    transform: $scale2;
+  }
+  @media screen and (min-device-pixel-ratio: 3), (-webkit-min-device-pixel-ratio: 3) {
+    transform: $scale3;
+  }
+}
+
+%border-position {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  content: ' ';
+  transform-origin: 0 0;
+}
+
+// 全边框
+@mixin border($color, $radius: 0px, $width: 1px, $style: solid) {
+  position: relative;
+  &::before {
+    @extend %border-position;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    border: $width $style $color;
+    border-radius: $radius;
+    @include min-device-pixel-ratio(scale(.5), scale(.5));
+    @media screen and (min-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2) {
+      width: 200%;
+      height: 200%;
+      border-radius: $radius * 2;
+    }
+    @media screen and (min-device-pixel-ratio: 3), (-webkit-min-device-pixel-ratio: 3) {
+      width: 200%;
+      height: 200%;
+      border-radius: $radius * 2;
+    }
+  }
+}
+
+// 上边框
+@mixin border-top($color, $width: 1px, $style: solid) {
+  position: relative;
+  &::before {
+    @extend %border-position;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border-top: $width $style $color;
+    @include min-device-pixel-ratio(scaleY(.5), scaleY(.5));
+  }
+}
+
+// 下边框
+@mixin border-bottom($color, $width: 1px, $style: solid) {
+  position: relative;
+  &::after {
+    @extend %border-position;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 1px;
+    border-bottom: $width $style $color;
+    @include min-device-pixel-ratio(scaleY(.5), scaleY(.5));
+  }
+}
+
+// 左边框
+@mixin border-left($color, $width: 1px, $style: solid) {
+  position: relative;
+  &::after {
+    @extend %border-position;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-left: $width $style $color;
+    @include min-device-pixel-ratio(scaleX(.5), scaleX(.5));
+  }
+}
+
+// 右边框
+@mixin border-right($color, $width: 1px, $style: solid) {
+  position: relative;
+  &::before {
+    @extend %border-position;
+    right: 0;
+    top: 0;
+    height: 100%;
+    border-right: $width $style $color;
+    @include min-device-pixel-ratio(scaleX(.5), scaleX(.5));
+  }
+}
+
+/**
+* 真.1px边框
+* {List}: 多个方向边框, 默认值为bottom, 你可以根据需要传入(top, left, bottom, right) 4个方向;
+* {Color} 边框的颜色, 默认#ccc;
+* {List} 4个圆角半径, 默认0;
+* {String} 一个高级设置, 一般都不需要改动, 由于细边框的实现使用了css的伪类, 所以为了规避可能出现的样式冲突, 我们可以自己指定使用:after还是:before, 默认after;
+*/
+@mixin thinBorder(
+  $directionMaps: bottom,
+  $color: #e1e1e1,
+  $radius: (
+    0,
+    0,
+    0,
+    0
+  ),
+  $position: after
+) {
+  // 是否只有一个方向
+  $isOnlyOneDir: string==type-of($directionMaps);
+
+  @if ($isOnlyOneDir) {
+    $directionMaps: ($directionMaps);
+  }
+
+  @each $directionMap in $directionMaps {
+    border-#{$directionMap}: 1px solid $color;
+  }
+
+  // 判断圆角是list还是number
+  @if (list==type-of($radius)) {
+    border-radius: nth($radius, 1)
+      nth($radius, 2)
+      nth($radius, 3)
+      nth($radius, 4);
+  } @else {
+    border-radius: $radius;
+  }
+
+  @media only screen and (-webkit-min-device-pixel-ratio: 2) {
+    & {
+      position: relative;
+
+      // 删除1像素密度比下的边框
+      @each $directionMap in $directionMaps {
+        border-#{$directionMap}: none;
+      }
+    }
+
+    &:#{$position} {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 200%;
+      height: 200%;
+      transform: scale(0.5);
+      box-sizing: border-box;
+      padding: 1px;
+      transform-origin: 0 0;
+      pointer-events: none;
+      border: 0 solid $color;
+
+      @each $directionMap in $directionMaps {
+        border-#{$directionMap}-width: 1px;
+      }
+
+      // 判断圆角是list还是number
+      @if (list==type-of($radius)) {
+        border-radius: nth($radius, 1) *
+          2
+          nth($radius, 2) *
+          2
+          nth($radius, 3) *
+          2
+          nth($radius, 4) *
+          2;
+      } @else {
+        border-radius: $radius * 2;
+      }
+    }
+  }
+
+  @media only screen and (-webkit-min-device-pixel-ratio: 3) {
+    &:#{$position} {
+      // 判断圆角是list还是number
+      @if (list==type-of($radius)) {
+        border-radius: nth($radius, 1) *
+          3
+          nth($radius, 2) *
+          3
+          nth($radius, 3) *
+          3
+          nth($radius, 4) *
+          3;
+      } @else {
+        border-radius: $radius * 3;
+      }
+
+      width: 300%;
+      height: 300%;
+      transform: scale(0.3333);
+    }
+  }
+}
